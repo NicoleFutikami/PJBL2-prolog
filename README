@@ -1,0 +1,291 @@
+# PjBL2 — Tabela de Classificação de Campeonato
+
+## Sobre o projeto
+
+Projeto acadêmico desenvolvido para a disciplina de Lógica,
+utilizando a linguagem de programação funcional Haskell.
+
+O objetivo é calcular a tabela de classificação de um
+campeonato de futebol a partir dos resultados das partidas,
+aplicando tipos algébricos, funções de ordem superior,
+composição de funções e as mônadas Maybe e Either.
+
+## Integrantes
+
+- Nome do integrante 1
+- Nome do integrante 2
+- Nome do integrante 3
+- Nome do integrante 4
+
+## Tecnologias utilizadas
+
+- Haskell
+- GHC (Glasgow Haskell Compiler)
+- Biblioteca padrão base
+- Visual Studio Code
+- Git e GitHub
+
+Não são necessárias bibliotecas externas.
+
+## Estrutura do projeto
+
+    PJBL2-prolog/
+    ├── src/
+    │   ├── Tipos.hs
+    │   ├── Classificacao.hs
+    │   ├── Leitura.hs
+    │   ├── Dados.hs
+    │   └── Main.hs
+    ├── tests/
+    │   └── Testes.hs
+    ├── docs/
+    │   └── decisoes.md
+    └── README.md
+
+## Camada 1 — Tipos e dados
+
+Responsável pela representação do campeonato por meio
+de tipos algébricos e records.
+
+Principais tipos:
+
+- Time
+- Resultado
+- Partida
+- Linha
+
+Principais funções:
+
+- participou
+- resultadoPara
+- times
+
+## Camada 2 — Classificação
+
+Responsável pelo cálculo da classificação e das
+estatísticas do campeonato.
+
+Funções implementadas:
+
+- pontos
+- linhaDoTime
+- pontosLinha
+- saldo
+- aproveitamento
+- classificacao
+- ateRodada
+- maiorGoleada
+- mediaGols
+
+A implementação utiliza map, filter, foldl, composição,
+sortBy, comparing, Down e o operador <>, sem recursão
+explícita nesta camada.
+
+## Camada 3 — Leitura e validação
+
+Responsável pela conversão dos dados textuais em partidas,
+validação das entradas e formatação da classificação.
+
+Funções implementadas:
+
+- separar
+- lerPartida
+- lerCampeonato
+- todosOsErros
+- tabelaFormatada
+- main
+
+A leitura utiliza readMaybe, Maybe, Either, notação do
+e traverse para tratar entradas inválidas.
+
+## Campeonato de demonstração
+
+O campeonato fictício contém seis equipes, cinco rodadas
+e quinze partidas.
+
+Equipes participantes:
+
+- Athletico
+- Coritiba
+- Londrina
+- Maringá
+- Operário
+- Paraná
+
+Os resultados são fictícios e foram elaborados para
+demonstrar empates, goleadas, critérios de desempate
+e mudanças na classificação ao longo das rodadas.
+
+## Regras de pontuação
+
+| Resultado | Pontos |
+|-----------|--------|
+| Vitória   | 3      |
+| Empate    | 1      |
+| Derrota   | 0      |
+
+## Critérios de desempate
+
+1. Maior quantidade de pontos.
+2. Maior quantidade de vitórias.
+3. Maior saldo de gols.
+4. Maior quantidade de gols pró.
+5. Ordem alfabética.
+
+## Formato da entrada
+
+Cada linha representa uma partida, com os campos
+separados por ponto e vírgula:
+
+    rodada;mandante;golsMandante;golsVisitante;visitante
+
+Exemplo:
+
+    # Resultados do campeonato
+    1;Athletico;4;0;Paraná
+    1;Coritiba;0;0;Operário
+    1;Londrina;2;1;Maringá
+
+Linhas vazias e comentários iniciados por # são ignorados.
+
+Os dados utilizados pelo programa estão disponíveis
+no arquivo src/Dados.hs.
+
+## Tratamento de erros
+
+O sistema identifica os seguintes erros:
+
+| Erro | Descrição |
+|------|-----------|
+| CamposInvalidos | Quantidade incorreta de campos |
+| NumeroInvalido | Número em formato inválido |
+| PlacarNegativo | Quantidade negativa de gols |
+| MesmoTime | Time jogando contra ele mesmo |
+| TimeRepetidoNaRodada | Time repetido na mesma rodada |
+| RodadaInvalida | Rodada menor ou igual a zero |
+| NomeVazio | Nome de time não informado |
+
+A função lerCampeonato retorna o primeiro erro encontrado.
+
+A função todosOsErros apresenta os erros encontrados
+ao longo da entrada, conforme as regras de validação.
+
+## Ambiente de execução
+
+O ambiente escolhido para compilação e execução do
+projeto é o GHC local.
+
+É necessário possuir o GHC instalado.
+
+Site oficial para instalação:
+
+https://www.haskell.org/ghcup/
+
+Todos os comandos devem ser executados na raiz do
+repositório.
+
+## Como compilar
+
+    ghc -Wall -isrc src/Main.hs -o campeonato
+
+A opção -Wall habilita os avisos do compilador.
+A opção -isrc indica a localização dos módulos.
+
+## Como executar
+
+No macOS ou Linux:
+
+    ./campeonato
+
+No Windows (PowerShell):
+
+    .\campeonato.exe
+
+O programa apresenta:
+
+1. Classificação final.
+2. Classificação após a terceira rodada.
+3. Estatísticas do campeonato.
+4. Aproveitamento dos times.
+5. Demonstração de entradas inválidas.
+6. Relatório de erros.
+7. Comportamento diante de um campeonato vazio.
+
+## Classificação final esperada
+
+| POS | Time      | PTS | J | V | E | D | SG |
+|-----|-----------|-----|---|---|---|---|----|
+| 1   | Athletico | 10  | 5 | 3 | 1 | 1 | +6 |
+| 2   | Coritiba  | 10  | 5 | 3 | 1 | 1 | +3 |
+| 3   | Maringá   | 7   | 5 | 2 | 1 | 2 | +1 |
+| 4   | Operário  | 7   | 5 | 1 | 4 | 0 | +1 |
+| 5   | Londrina  | 4   | 5 | 1 | 1 | 3 | -4 |
+| 6   | Paraná    | 2   | 5 | 0 | 2 | 3 | -7 |
+
+O Athletico termina na primeira posição pelo critério
+de saldo de gols.
+
+O Maringá fica à frente do Operário pelo maior número
+de vitórias.
+
+## Estatísticas esperadas
+
+- Quantidade de times: 6
+- Quantidade de rodadas: 5
+- Quantidade de partidas: 15
+- Total de gols: 36
+- Média de gols por partida: 2,4
+- Maior goleada: Athletico 4 x 0 Paraná
+
+## Testes automatizados
+
+O arquivo tests/Testes.hs contém testes das três camadas,
+incluindo os casos obrigatórios e casos de borda.
+
+Para compilar os testes:
+
+    ghc -Wall -isrc tests/Testes.hs -o testes
+
+Para executar no macOS ou Linux:
+
+    ./testes
+
+No Windows (PowerShell):
+
+    .\testes.exe
+
+A suíte apresenta o resultado individual dos testes,
+os valores esperados em caso de falha e o total de
+testes aprovados.
+
+Resultado esperado: 59 testes aprovados.
+
+## Decisões de modelagem
+
+As decisões técnicas, justificativas e limitações
+conhecidas estão documentadas em:
+
+[Decisões de modelagem](docs/decisoes.md)
+
+## Conceitos aplicados
+
+- Programação funcional
+- Tipos algébricos
+- Tipos soma e tipos produto
+- Records
+- Pattern matching
+- Funções de ordem superior
+- Funções puras
+- Composição de funções
+- Functors
+- Mônadas Maybe e Either
+- Notação do
+- Tratamento de erros
+- Modularização
+- Testes automatizados
+
+## Finalidade acadêmica
+
+Projeto desenvolvido para o PjBL2 da disciplina de Lógica,
+com o objetivo de aplicar os conceitos de programação
+funcional estudados durante o semestre.
