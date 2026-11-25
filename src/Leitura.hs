@@ -75,3 +75,66 @@ lerPartida n texto =
         }
 
     _ -> Left (CamposInvalidos n)
+
+-- Ignora linhas vazias e comentarios, preservando
+-- a numeracao original das linhas.
+linhasUteis :: String -> [(Int, String)]
+linhasUteis = filter (linhaUtil . snd) . zip [1..] . lines
+  where
+    linhaUtil :: String -> Bool
+    linhaUtil texto =
+      case limpar texto of
+        [] -> False
+        '#' : _ -> False
+        _ -> True
+
+-- Identifica os times que participaram de uma rodada.
+chavesPartida :: Partida -> [(Int, Time)]
+chavesPartida p =
+  [ (rodada p, mandante p)
+  , (rodada p, visitante p)
+  ]
+
+-- Registra os times das partidas validas.
+registrar :: [(Int, Time)] -> Either Erro Partida -> [(Int, Time)]
+registrar vistos (Left _) = vistos
+registrar vistos (Right p) = chavesPartida p ++ vistos
+
+-- Identifica os times repetidos na mesma rodada.
+errosDeRepeticao :: [(Int, Time)] -> Partida -> [Erro]
+errosDeRepeticao vistos p =
+  map (uncurry TimeRepetidoNaRodada)
+    (filter (`elem` vistos) (chavesPartida p))
+
+-- Analisa cada linha e suas possiveis repeticoes.
+analisarEntradas :: String -> [(Either Erro Partida, [Erro])]
+analisarEntradas texto =
+  zipWith analisar anteriores resultados
+  where
+    resultados :: [Either Erro Partida]
+    resultados = map (uncurry lerPartida) (linhasUteis texto)
+
+    anteriores :: [[(Int, Time)]]
+    anteriores = scanl registrar [] resultados
+
+    analisar :: [(Int, Time)] -> Either Erro Partida
+             -> (Either Erro Partida, [Erro])
+    analisar vistos resultado =
+      (resultado, either (const []) (errosDeRepeticao vistos) resultado)
+
+-- Le o campeonato, interrompendo no primeiro erro.
+lerCampeonato :: String -> Either Erro [Partida]
+lerCampeonato = traverse validarEntrada . analisarEntradas
+  where
+    validarEntrada :: (Either Erro Partida, [Erro])
+                   -> Either Erro Partida
+    validarEntrada (resultado, []) = resultado
+    validarEntrada (_, erro : _) = Left erro
+
+-- Retorna todos os erros encontrados no campeonato.
+todosOsErros :: String -> [Erro]
+todosOsErros = concatMap extrairErros . analisarEntradas
+  where
+    extrairErros :: (Either Erro Partida, [Erro]) -> [Erro]
+    extrairErros (Left erro, repeticoes) = erro : repeticoes
+    extrairErros (Right _, repeticoes) = repeticoes
