@@ -4,6 +4,7 @@ import Tipos
 import Data.Char (isSpace)
 import Data.List (dropWhileEnd)
 import Text.Read (readMaybe)
+import Classificacao (pontosLinha, saldo)
 
 -- Representa os possiveis erros de entrada.
 data Erro
@@ -138,3 +139,53 @@ todosOsErros = concatMap extrairErros . analisarEntradas
     extrairErros :: (Either Erro Partida, [Erro]) -> [Erro]
     extrairErros (Left erro, repeticoes) = erro : repeticoes
     extrairErros (Right _, repeticoes) = repeticoes
+
+-- Alinha um texto a esquerda.
+alinharEsquerda :: Int -> String -> String
+alinharEsquerda largura texto =
+  texto ++ replicate (max 0 (largura - length texto)) ' '
+
+-- Alinha um texto a direita.
+alinharDireita :: Int -> String -> String
+alinharDireita largura texto =
+  replicate (max 0 (largura - length texto)) ' ' ++ texto
+
+-- Formata uma linha individual da classificacao.
+formatarLinha :: Int -> Int -> Linha -> String
+formatarLinha largura pos l = unwords
+  [ alinharDireita 3 (show pos)
+  , alinharEsquerda largura (time l)
+  , alinharDireita 5 (show (pontosLinha l))
+  , alinharDireita 3 (show (jogos l))
+  , alinharDireita 3 (show (vitorias l))
+  , alinharDireita 3 (show (empates l))
+  , alinharDireita 3 (show (derrotas l))
+  , alinharDireita 4 (show (saldo l))
+  ]
+
+-- Transforma a classificacao em uma tabela textual.
+tabelaFormatada :: [Linha] -> String
+tabelaFormatada linhas =
+  unlines
+    (cabecalho : separador : corpo)
+  where
+    largura :: Int
+    largura = foldl max 4 (map (length . time) linhas)
+
+    cabecalho :: String
+    cabecalho = unwords
+      [ alinharDireita 3 "POS"
+      , alinharEsquerda largura "TIME"
+      , alinharDireita 5 "PTS"
+      , alinharDireita 3 "J"
+      , alinharDireita 3 "V"
+      , alinharDireita 3 "E"
+      , alinharDireita 3 "D"
+      , alinharDireita 4 "SG"
+      ]
+
+    separador :: String
+    separador = replicate (length cabecalho) '-'
+
+    corpo :: [String]
+    corpo = zipWith (formatarLinha largura) [1..] linhas
