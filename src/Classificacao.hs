@@ -84,3 +84,28 @@ classificacao partidas =
 
 ateRodada :: Int -> [Partida] -> [Partida]
 ateRodada n = filter ((<= n) . rodada)
+
+
+
+diferencaGols :: Partida -> Int
+diferencaGols p = abs (golsMandante p - golsVisitante p)
+
+maiorGoleada :: [Partida] -> Maybe Partida
+maiorGoleada = foldl escolher Nothing
+  where
+    escolher :: Maybe Partida -> Partida -> Maybe Partida
+    escolher Nothing p = Just p
+    escolher (Just melhor) p
+      | diferencaGols p > diferencaGols melhor = Just p
+      | otherwise = Just melhor
+
+
+mediaGols :: [Partida] -> Maybe Double
+mediaGols [] = Nothing
+mediaGols partidas =
+  Just (sum (map totalGols partidas) / fromIntegral (length partidas))
+  where
+    totalGols :: Partida -> Double
+    totalGols p = fromIntegral (golsMandante p)
+                + fromIntegral (golsVisitante p)
+
