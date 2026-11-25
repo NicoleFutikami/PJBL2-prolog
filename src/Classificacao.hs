@@ -2,6 +2,8 @@
 module Classificacao where
 
 import Tipos
+import Data.List (sortBy)
+import Data.Ord (comparing, Down(..))
 
 -- Pontuacao de cada resultado.
 pontos :: Resultado -> Int
@@ -37,32 +39,48 @@ atualizarLinha l p =
         , golsContra = golsContra l + gc
         }
 
--- Converte uma condicao em 1 ou 0.
+
 indicador :: Bool -> Int
 indicador True = 1
 indicador False = 0
 
--- Acumula o desempenho do time ao longo do campeonato.
 linhaDoTime :: [Partida] -> Time -> Linha
 linhaDoTime partidas t =
   foldl atualizarLinha (linhaVazia t)
     (filter (participou t) partidas)
 
--- Calcula o total de pontos conquistados.
 pontosLinha :: Linha -> Int
 pontosLinha l =
   pontos Vitoria * vitorias l
   + pontos Empate * empates l
   + pontos Derrota * derrotas l
 
--- Calcula o saldo de gols.
+
 saldo :: Linha -> Int
 saldo l = golsPro l - golsContra l
 
--- Calcula o percentual de aproveitamento.
+
 aproveitamento :: Linha -> Double
 aproveitamento l
   | jogos l == 0 = 0
   | otherwise =
       100 * fromIntegral (pontosLinha l)
       / (3 * fromIntegral (jogos l))
+
+
+compararLinhas :: Linha -> Linha -> Ordering
+compararLinhas =
+     comparing (Down . pontosLinha)
+  <> comparing (Down . vitorias)
+  <> comparing (Down . saldo)
+  <> comparing (Down . golsPro)
+  <> comparing time
+
+
+classificacao :: [Partida] -> [Linha]
+classificacao partidas =
+  sortBy compararLinhas
+    (map (linhaDoTime partidas) (times partidas))
+
+ateRodada :: Int -> [Partida] -> [Partida]
+ateRodada n = filter ((<= n) . rodada)
